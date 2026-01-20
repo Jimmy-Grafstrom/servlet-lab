@@ -13,7 +13,7 @@ public class Main {
 //starta servern
 
 //starta servern
-        context.addServlet(HelloServlet.class, "/hello");
+        context.addServlet(HelloServlet.class, "/fest321");
 
         context.addServlet(HelloServlet.class, "/hello/*");//lägg till /*
 
