@@ -50,6 +50,20 @@
                 alert("Vänligen skriv in ditt namn först!");
             }
         }
+
+        function changeColor(color) {
+            document.body.style.background = color;
+            localStorage.setItem('preferredBgColor', color);
+        }
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const savedColor = localStorage.getItem('preferredBgColor');
+            if (savedColor) {
+                document.body.style.background = savedColor;
+                const picker = document.getElementById('bgColorPicker');
+                if (picker) picker.value = savedColor;
+            }
+        });
     </script>
 </head>
 <body>
@@ -59,6 +73,11 @@
         <div style="margin-top: 20px;">
             <input type="text" id="nameInput" placeholder="Ditt namn..." onkeydown="if(event.key === 'Enter') goToHello()">
             <button onclick="goToHello()">Gå vidare</button>
+        </div>
+
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+            <label for="bgColorPicker" style="margin-right: 10px; font-size: 14px;">Ändra bakgrundsfärg:</label>
+            <input type="color" id="bgColorPicker" value="#6a11cb" oninput="changeColor(this.value)" style="cursor: pointer; vertical-align: middle;">
         </div>
     </div>
 </body>
