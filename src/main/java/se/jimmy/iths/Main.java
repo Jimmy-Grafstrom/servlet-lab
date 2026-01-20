@@ -9,6 +9,9 @@ public class Main {
 
         server.setHandler(context);
 
+        // Registrera Kaos-filtret på allt!
+        context.addFilter(ChaosFilter.class, "/*", java.util.EnumSet.of(jakarta.servlet.DispatcherType.REQUEST));
+
         context.addServlet(RootServlet.class, "/");
 //starta servern
 
