@@ -15,12 +15,46 @@
             align-items: center;
             justify-content: center;
         }
-        a { color: #fff; font-weight: bold; }
+        a { color: #fff; font-weight: bold; margin-top: 20px; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #fff;
+            color: #6a11cb;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.05);
+        }
+        .container {
+            text-align: center;
+        }
     </style>
+    <script>
+        function reverseName() {
+            var nameElement = document.getElementById('displayName');
+            var currentName = nameElement.innerText;
+            var reversed = currentName.split('').reverse().join('');
+            nameElement.innerText = reversed;
+        }
+    </script>
 </head>
 <body>
-    <h1 th:text="'Hej ' + ${name} + '!'">Hej främling!</h1>
-    <p>Detta är en sida renderad med Thymeleaf.</p>
-    <a href="/">Tillbaka hem</a>
+    <div class="container">
+        <h1>Hej <span id="displayName" th:text="${name}">främling</span>!</h1>
+        <p>Detta är en sida renderad med Thymeleaf.</p>
+        
+        <button onclick="reverseName()">Vänd på namnet!</button>
+        
+        <br>
+        <a href="/">Tillbaka hem</a>
+    </div>
 </body>
 </html>
