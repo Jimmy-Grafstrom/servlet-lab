@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hej!</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            font-family: sans-serif;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        a { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 th:text="'Hej ' + ${name} + '!'">Hej främling!</h1>
+    <p>Detta är en sida renderad med Thymeleaf.</p>
+    <a href="/">Tillbaka hem</a>
+</body>
+</html>
