@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Hej!</title>
     <style>
         body {
@@ -57,7 +58,159 @@
                 const picker = document.getElementById('bgColorPicker');
                 if (picker) picker.value = savedColor;
             }
+            initGame();
         });
+
+        // --- Dino Game Logic ---
+        let canvas, ctx;
+        let dino = { x: 50, y: 110, width: 20, height: 20, dy: 0, jumpStrength: -10, gravity: 0.6, grounded: false };
+        let obstacles = [];
+        let gameInterval;
+        let score = 0;
+        let isGameRunning = false;
+        let gameSpeed = 5;
+        let spawnTimer = 0;
+
+        function initGame() {
+            canvas = document.getElementById('dinoCanvas');
+            if(!canvas) return;
+            ctx = canvas.getContext('2d');
+            
+            // Mouse/Touch jump
+            canvas.addEventListener('mousedown', handleJump);
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleJump(); });
+
+            // Keyboard jump
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    handleJump();
+                    e.preventDefault(); 
+                }
+            });
+            
+            drawGame();
+            ctx.fillStyle = '#333';
+            ctx.font = '16px monospace';
+            ctx.fillText("Tryck Mellanslag för att starta", 160, 80);
+        }
+
+        function handleJump() {
+            if (!isGameRunning) {
+                startGame();
+            } else if (dino.grounded) {
+                dino.dy = dino.jumpStrength;
+                dino.grounded = false;
+            }
+        }
+
+        function startGame() {
+            isGameRunning = true;
+            score = 0;
+            obstacles = [];
+            dino.y = 110;
+            dino.dy = 0;
+            gameSpeed = 5;
+            spawnTimer = 0;
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(updateGame, 20);
+        }
+
+        function updateGame() {
+            // Dino Physics
+            dino.dy += dino.gravity;
+            dino.y += dino.dy;
+
+            if (dino.y > 110) { 
+                dino.y = 110;
+                dino.dy = 0;
+                dino.grounded = true;
+            }
+
+            // Obstacles
+            spawnTimer--;
+            if (spawnTimer <= 0) {
+                // Random size (Start small, get varied)
+                let obsHeight = 20 + Math.random() * 15; 
+                let obsWidth = 20 + Math.random() * 10;
+                
+                let difficulty = score * 0.5;
+                let minSpawn = Math.max(25, 50 - difficulty); 
+                let rangeSpawn = Math.max(20, 60 - difficulty);
+
+                obstacles.push({ 
+                    x: canvas.width, 
+                    y: 130 - obsHeight, 
+                    width: obsWidth, 
+                    height: obsHeight 
+                });
+                spawnTimer = minSpawn + Math.random() * rangeSpawn; 
+            }
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.x -= gameSpeed;
+
+                // Collision
+                if (dino.x < obs.x + obs.width &&
+                    dino.x + dino.width > obs.x &&
+                    dino.y < obs.y + obs.height &&
+                    dino.y + dino.height > obs.y) {
+                    gameOver();
+                    return;
+                }
+
+                // Remove off-screen
+                if (obs.x + obs.width < 0) {
+                    obstacles.splice(i, 1);
+                    i--;
+                    score++;
+                    if (score % 3 === 0) gameSpeed += 0.4; 
+                }
+            }
+
+            drawGame();
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Ground
+            ctx.beginPath();
+            ctx.moveTo(0, 130);
+            ctx.lineTo(canvas.width, 130);
+            ctx.strokeStyle = '#888';
+            ctx.stroke();
+
+            // Dino (Black Square)
+            ctx.fillStyle = '#333';
+            ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+
+            // Obstacles (Red Squares)
+            ctx.fillStyle = '#d32f2f';
+            for (let obs of obstacles) {
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+            }
+
+            // Score
+            ctx.fillStyle = '#000';
+            ctx.font = '16px monospace';
+            ctx.fillText("Poäng: " + score, canvas.width - 100, 30);
+        }
+
+        function gameOver() {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '30px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+            ctx.font = '16px monospace';
+            ctx.fillText("Tryck Mellanslag för att spela igen", canvas.width / 2, canvas.height / 2 + 30);
+            ctx.textAlign = 'start'; // Reset alignment
+        }
     </script>
 </head>
 <body>
@@ -67,13 +220,36 @@
         
         <button onclick="reverseName()">Vänd på namnet!</button>
         
-        <br>
-        <a href="/">Tillbaka hem</a>
-
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
-            <label for="bgColorPicker" style="margin-right: 10px; font-size: 14px;">Ändra bakgrundsfärg:</label>
-            <input type="color" id="bgColorPicker" value="#6a11cb" oninput="changeColor(this.value)" style="cursor: pointer; vertical-align: middle;">
-        </div>
-    </div>
-</body>
-</html>
+                <br>
+        
+                <a href="/">Tillbaka hem</a>
+        
+        
+        
+                <!-- Dino Game Canvas -->
+        
+                <div style="margin-top: 30px;">
+        
+                    <canvas id="dinoCanvas" width="600" height="150" style="background: white; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: block; margin: 0 auto; cursor: pointer;"></canvas>
+        
+                    <p style="font-size: 12px; margin-top: 5px; opacity: 0.8;">(Tryck Mellanslag eller klicka för att hoppa)</p>
+        
+                </div>
+        
+        
+        
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+        
+                    <label for="bgColorPicker" style="margin-right: 10px; font-size: 14px;">Ändra bakgrundsfärg:</label>
+        
+                    <input type="color" id="bgColorPicker" value="#6a11cb" oninput="changeColor(this.value)" style="cursor: pointer; vertical-align: middle;">
+        
+                </div>
+        
+            </div>
+        
+        </body>
+        
+        </html>
+        
+        
